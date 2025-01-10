@@ -89,6 +89,9 @@ const AMOUNT_EPOCHS = 100
 document.querySelector('#trainingData').value = trainingData.join('\n')
 document.querySelector('#train').innerText = `Train for ${AMOUNT_EPOCHS} epochs`
 
+// Set gpu backend
+tf.setBackend('webgl')
+
 // Preprocess text data
 const preprocessData = (textArray) => {
     // Get all unique characters
@@ -143,13 +146,13 @@ const preprocessData = (textArray) => {
 }
 
 // Create LSTM model
-const createModel = (maxLen, vocabSize) => {
+const createModel = (maxLength, vocabularySize) => {
     const model = tf.sequential()
     
     model.add(tf.layers.embedding({
-        inputDim: vocabSize,
+        inputDim: vocabularySize,
         outputDim: 32,
-        inputLength: maxLen
+        inputLength: maxLength
     }))
     
     model.add(tf.layers.lstm({
@@ -164,7 +167,7 @@ const createModel = (maxLen, vocabSize) => {
     model.add(tf.layers.dropout({ rate: 0.2 }))
     
     model.add(tf.layers.dense({
-        units: vocabSize,
+        units: vocabularySize,
         activation: 'softmax'
     }))
     
@@ -192,7 +195,12 @@ function initializeModel() {
 
 // Training function
 async function train() {
+    // Enable buttons
+    document.querySelector('#create').disabled = false
+    document.querySelector('#save').disabled = false
+
     console.log('Training started...')
+    console.log('Using backend ' + tf.getBackend())
     const startTime = performance.now()
     
     // Initialize model if it doesn't exist
@@ -225,7 +233,7 @@ async function train() {
     console.log(`Total epochs trained: ${totalEpochsTrained}`)
 }
 
-// Generate new names
+// Generate a new name
 function generateName(seed, temperature = 0.5) {
     let currentSequence = seed.toLowerCase()
     
@@ -265,6 +273,7 @@ function generateName(seed, temperature = 0.5) {
     return currentSequence
 }
 
+// Generate new names
 function createNames() {
     const newNames = []
     const characters = Object.keys(characterToIndex).join('').replace('-', '')
@@ -359,6 +368,10 @@ async function loadModel() {
             
             console.log('Model and metadata loaded successfully!')
             console.log(`Resumed from epoch ${totalEpochsTrained}`)
+
+            // Enable buttons
+            document.querySelector('#create').disabled = false
+            document.querySelector('#save').disabled = false
         } catch (error) {
             console.error('Error loading files:', error)
             alert(error.message || 'Error loading files.')
