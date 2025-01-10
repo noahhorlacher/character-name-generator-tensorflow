@@ -80,11 +80,13 @@ const trainingData = [
     "Ansel Wartenthor",
 ]
 
-document.querySelector('#trainingData').value = trainingData.join('\n')
-
+// Model variables
 let model, characterToIndex, indexToCharacter, maxLength, vocabularySize
-
+let totalEpochsTrained = 0
 const AMOUNT_EPOCHS = 100
+
+// Adjust UI to variables
+document.querySelector('#trainingData').value = trainingData.join('\n')
 document.querySelector('#train').innerText = `Train for ${AMOUNT_EPOCHS} epochs`
 
 // Preprocess text data
@@ -124,7 +126,7 @@ const preprocessData = (textArray) => {
     })
     
     // Prepare output data
-    const y = nextChars.map(char => {
+    const Y = nextChars.map(char => {
         const output = Array(uniqueChars.length).fill(0)
         output[characterToIndex[char]] = 1
         return output
@@ -132,7 +134,7 @@ const preprocessData = (textArray) => {
     
     return {
         X: tf.tensor2d(X, [X.length, maxLength]),
-        y: tf.tensor2d(y, [y.length, uniqueChars.length]),
+        y: tf.tensor2d(Y, [Y.length, uniqueChars.length]),
         characterToIndex: characterToIndex,
         indexToCharacter: indexToCharacter,
         maxLength: maxLength,
@@ -174,8 +176,6 @@ const createModel = (maxLen, vocabSize) => {
     
     return model
 }
-
-let totalEpochsTrained = 0
 
 // Initialize model only once
 function initializeModel() {
@@ -267,7 +267,7 @@ function generateName(seed, temperature = 0.5) {
 
 function createNames() {
     const newNames = []
-    const characters = Object.keys(characterToIndex).join('').replace(' ', '').replace('-', '')
+    const characters = Object.keys(characterToIndex).join('').replace('-', '')
     
     for (let i = 0; i < 10; i++) {
         const length = Math.floor(Math.random() * 4) + 3
@@ -317,7 +317,7 @@ async function saveModel() {
     }
 }
 
-// load function
+// Load model
 async function loadModel() {
     const input = document.createElement('input')
     input.type = 'file'
